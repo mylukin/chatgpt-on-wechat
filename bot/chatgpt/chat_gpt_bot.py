@@ -129,13 +129,16 @@ class ChatGPTBot(Bot, OpenAIImage):
             if args is None:
                 args = self.args
             
-            # Replace ${datetime} with current time in system messages
+            # Create a copy of messages and replace ${datetime} with current time in system messages
             current_time = time.strftime("%Y-%m-%dT%H:%M:%S+08:00")
+            messages = []
             for msg in session.messages:
-                if msg["role"] == "system":
-                    msg["content"] = msg["content"].replace("${datetime}", current_time)
+                msg_copy = msg.copy()
+                if msg_copy["role"] == "system":
+                    msg_copy["content"] = msg_copy["content"].replace("${datetime}", current_time)
+                messages.append(msg_copy)
             
-            response = openai.ChatCompletion.create(api_key=api_key, messages=session.messages, **args)
+            response = openai.ChatCompletion.create(api_key=api_key, messages=messages, **args)
             # logger.debug("[CHATGPT] response={}".format(response))
             # logger.info("[ChatGPT] reply={}, total_tokens={}".format(response.choices[0]['message']['content'], response["usage"]["total_tokens"]))
             return {
